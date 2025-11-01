@@ -426,7 +426,11 @@ function loadMainScript()
             announcementLab.Text = announcements[announcementIndex]
         end
     end)
-
+local functionContainer = Instance.new("Frame")
+local leftColumn = Instance.new("Frame")
+local rightColumn = Instance.new("Frame")
+leftColumn.Parent = mainWindow
+rightColumn.Parent = mainWindow                                                                                                                                                                       
     -- ==========================================================
 --  滑动链：横屏按钮区 → ScrollingFrame + UIListLayout
 -- ==========================================================
