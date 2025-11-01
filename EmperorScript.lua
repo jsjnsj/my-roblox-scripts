@@ -439,7 +439,7 @@ functionContainer.ScrollBarThickness = 6
 functionContainer.ScrollingDirection = Enum.ScrollingDirection.Y
 functionContainer.Parent = mainWindow
 
--- 自动排布
+-- 双列容器（横向排布）
 local layout = Instance.new("UIListLayout")
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Padding = UDim.new(0, 8)
