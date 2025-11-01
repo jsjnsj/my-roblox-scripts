@@ -427,11 +427,58 @@ function loadMainScript()
         end
     end)
 
-    local functionContainer = Instance.new("Frame")
-functionContainer.Size = UDim2.new(1, -20, 1, -80)
+    -- ==========================================================
+--  滑动链：横屏按钮区 → ScrollingFrame + UIListLayout
+-- ==========================================================
+local functionContainer = Instance.new("ScrollingFrame")
+functionContainer.Size = UDim2.new(1, -20, 1, -80)   -- 留空间给顶部栏
 functionContainer.Position = UDim2.new(0, 10, 0, 70)
 functionContainer.BackgroundTransparency = 1
+functionContainer.BorderSizePixel = 0
+functionContainer.ScrollBarThickness = 6
+functionContainer.ScrollingDirection = Enum.ScrollingDirection.Y
 functionContainer.Parent = mainWindow
+
+-- 双列容器（横向排布）
+local twoColFrame = Instance.new("Frame")
+twoColFrame.Size = UDim2.new(1, 0, 1, 0)
+twoColFrame.BackgroundTransparency = 1
+twoColFrame.Parent = functionContainer
+
+local leftColumn = Instance.new("Frame")   -- 左列
+leftColumn.Size = UDim2.new(0.48, 0, 1, 0)
+leftColumn.BackgroundTransparency = 1
+leftColumn.Parent = twoColFrame
+
+local rightColumn = Instance.new("Frame")  -- 右列
+rightColumn.Size = UDim2.new(0.48, 0, 1, 0)
+rightColumn.Position = UDim2.new(0.52, 0, 0, 0)
+rightColumn.BackgroundTransparency = 1
+rightColumn.Parent = twoColFrame
+
+-- 自动排布（每列独立）
+local leftLayout = Instance.new("UIListLayout")
+leftLayout.SortOrder = Enum.SortOrder.LayoutOrder
+leftLayout.Padding = UDim.new(0, 8)
+leftLayout.Parent = leftColumn
+-- ② 让每列自动撑高（防止堆叠）
+leftColumn:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    leftColumn.Size = UDim2.new(0.48, 0, 0, leftLayout.AbsoluteContentSize.Y)
+end)
+
+rightColumn:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    rightColumn.Size = UDim2.new(0.48, 0, 0, rightLayout.AbsoluteContentSize.Y)
+end)
+
+local rightLayout = Instance.new("UIListLayout")
+rightLayout.SortOrder = Enum.SortOrder.LayoutOrder
+rightLayout.Padding = UDim.new(0, 8)
+rightLayout.Parent = rightColumn
+
+-- 动态画布高度（防止裁切）
+twoColFrame:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    functionContainer.CanvasSize = UDim2.new(0, 0, 0, twoColFrame.AbsoluteContentSize.Y)
+end)
 
 -- 动态画布高度（防止裁切）
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
