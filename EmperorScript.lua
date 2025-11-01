@@ -427,23 +427,11 @@ function loadMainScript()
         end
     end)
 
-    -- ==========================================================
---  滑动链：按钮区 → ScrollingFrame + UIListLayout
--- ==========================================================
-local functionContainer = Instance.new("ScrollingFrame")
+    local functionContainer = Instance.new("Frame")
 functionContainer.Size = UDim2.new(1, -20, 1, -80)
 functionContainer.Position = UDim2.new(0, 10, 0, 70)
 functionContainer.BackgroundTransparency = 1
-functionContainer.BorderSizePixel = 0
-functionContainer.ScrollBarThickness = 6
-functionContainer.ScrollingDirection = Enum.ScrollingDirection.Y
 functionContainer.Parent = mainWindow
-
--- 双列容器（横向排布）
-local layout = Instance.new("UIListLayout")
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 8)
-layout.Parent = functionContainer
 
 -- 动态画布高度（防止裁切）
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
