@@ -473,6 +473,10 @@ end)
 rightColumn:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     rightColumn.Size = UDim2.new(0.48, 0, 0, rightLayout.AbsoluteContentSize.Y)
 end)
+-- 总画布同步
+twoColFrame:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    functionContainer.CanvasSize = UDim2.new(0, 0, 0, twoColFrame.AbsoluteContentSize.Y)
+end)
 
 local rightLayout = Instance.new("UIListLayout")
 rightLayout.SortOrder = Enum.SortOrder.LayoutOrder
