@@ -1,4 +1,3 @@
--- 可无限重复加载的 WindUI 裸壳 - 已修复 Slider + 容错
 ------------------------------------------------------------------
 -- 1. 拉库
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
