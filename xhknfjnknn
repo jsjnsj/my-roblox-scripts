@@ -1,0 +1,1587 @@
+if _G.UniversalUITool and _G.UniversalUITool.MainWindow then
+    print("🔧 检测到已存在的UI，正在清理...")
+    pcall(function()
+        _G.UniversalUITool.MainWindow:Destroy()
+    end)
+    
+    if _G.UniversalUITool.Connections then
+        for _, conn in pairs(_G.UniversalUITool.Connections) do
+            pcall(function() conn:Disconnect() end)
+        end
+    end
+    
+    _G.UniversalUITool = nil
+    wait(0.5)
+end
+
+_G.UniversalUITool = {
+    Connections = {},
+    Enabled = true,
+    Version = "不知道什么"
+}
+
+local OrionLib = loadstring(game:HttpGet("https://pastebin.com/raw/VeaMSRZK"))()
+
+-- 创建主窗口
+local MainWindow = OrionLib:MakeWindow({
+    Name = "xhknfjnknn.自制脚本",
+    HidePremium = false,
+    SaveConfig = true,
+    IntroText = "欢迎使用",
+    ConfigFolder = "MyTools"
+})
+
+_G.UniversalUITool.MainWindow = MainWindow
+
+-- 创建标签页（玩家信息放在第一个）
+local tabs = {
+    ["玩家信息"] = MainWindow:MakeTab({  -- 玩家信息放在第一个
+        Name = "玩家信息",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+    ["主功能"] = MainWindow:MakeTab({
+        Name = "主功能",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+    ["帅飞"] = MainWindow:MakeTab({
+        Name = "帅飞",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+    ["旋转"] = MainWindow:MakeTab({
+        Name = "旋转",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+    ["其他脚本"] = MainWindow:MakeTab({
+        Name = "其他脚本",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+    ["Doors"] = MainWindow:MakeTab({
+        Name = "Doors",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+        ["99夜"] = MainWindow:MakeTab({
+        Name = "99夜",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+        ["自然灾害"] = MainWindow:MakeTab({
+        Name = "自然灾害",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    }),
+}
+-- ==================== 玩家信息页面 ====================
+tabs["玩家信息"]:AddLabel("=== 基本信息 ===")
+
+-- 获取北京时间函数
+local function GetBeijingTime()
+    local success, result = pcall(function()
+        local timeService = game:GetService("HttpService")
+        local response = timeService:JSONDecode(game:HttpGet("http://worldtimeapi.org/api/timezone/Asia/Shanghai"))
+        return response.datetime
+    end)
+    
+    if success then
+        return os.date("%Y-%m-%d %H:%M:%S", os.time())
+    else
+        return os.date("%Y-%m-%d %H:%M:%S", os.time())
+    end
+end
+
+-- 检测注入器类型
+local function GetExecutorInfo()
+    if pcall(function() return syn and syn.request end) then
+        return "Synapse X"
+    elseif pcall(function() return crypt and crypt.base64_decode end) then
+        return "Krnl"
+    elseif pcall(function() return is_sirhurt_closure end) or pcall(function() return sirhurt end) then
+        return "SirHurt"
+    elseif pcall(function() return secure_load end) then
+        return "Script Ware"
+    elseif pcall(function() return isfluxus end) then
+        return "Fluxus"
+    elseif pcall(function() return getexecutorname end) then
+        local name = getexecutorname()
+        return name or "未知注入器"
+    else
+        if pcall(function() return identifyexecutor end) then
+            local exec = identifyexecutor()
+            return exec or "Roblox Lua"
+        else
+            return "Roblox Lua"
+        end
+    end
+end
+
+-- 创建信息显示标签
+local playerNameLabel = tabs["玩家信息"]:AddLabel("👤 玩家名称: 加载中...")
+local playerIDLabel = tabs["玩家信息"]:AddLabel("🔢 用户ID: 加载中...")
+local executorLabel = tabs["玩家信息"]:AddLabel("⚡ 注入器: 加载中...")
+local timeLabel = tabs["玩家信息"]:AddLabel("🕐 北京时间: 加载中...")
+
+-- 更新玩家信息函数
+local function UpdatePlayerInfo()
+    local localPlayer = game.Players.LocalPlayer
+    local executorInfo = GetExecutorInfo()
+    local beijingTime = GetBeijingTime()
+    
+    playerNameLabel:Set("👤 玩家名称: " .. localPlayer.Name)
+    playerIDLabel:Set("🔢 用户ID: " .. localPlayer.UserId)
+    executorLabel:Set("⚡ 注入器: " .. executorInfo)
+    timeLabel:Set("🕐 北京时间: " .. beijingTime)
+end
+
+-- 刷新按钮
+tabs["玩家信息"]:AddButton({
+    Name = "🔄 刷新信息",
+    Callback = function()
+        UpdatePlayerInfo()
+        OrionLib:MakeNotification({
+            Name = "信息更新",
+            Content = "玩家信息已刷新",
+            Time = 2
+        })
+    end
+})
+
+-- 复制信息按钮
+tabs["玩家信息"]:AddButton({
+    Name = "📋 复制信息到剪贴板",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        local executorInfo = GetExecutorInfo()
+        local beijingTime = GetBeijingTime()
+        
+        local infoText = string.format([[
+玩家名称: %s
+用户ID: %s
+注入器: %s
+北京时间: %s
+        ]], 
+        localPlayer.Name,
+        localPlayer.UserId,
+        executorInfo,
+        beijingTime)
+        
+        pcall(function()
+            if setclipboard then
+                setclipboard(infoText)
+                OrionLib:MakeNotification({
+                    Name = "复制成功",
+                    Content = "玩家信息已复制到剪贴板",
+                    Time = 3
+                })
+            else
+                OrionLib:MakeNotification({
+                    Name = "复制失败",
+                    Content = "不支持剪贴板功能",
+                    Time = 3
+                })
+            end
+        end)
+    end
+})
+
+-- 实时时间更新
+local function UpdateTime()
+    while wait(1) do
+        pcall(function()
+            local currentTime = GetBeijingTime()
+            timeLabel:Set("🕐 北京时间: " .. currentTime)
+        end)
+    end
+end
+
+-- 初始化时更新信息
+UpdatePlayerInfo()
+coroutine.wrap(UpdateTime)()
+
+-- ==================== 主功能页面 ====================
+-- 当前生命值输入框
+tabs["主功能"]:AddTextbox({
+    Name = "设置当前生命值 (1-200)",
+    Default = "100",
+    TextDisappear = false,
+    Callback = function(Value)
+        local newHealth = tonumber(Value)
+        if newHealth and newHealth >= 1 and newHealth <= 200 then
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.Health = newHealth
+                    OrionLib:MakeNotification({
+                        Name = "生命值设置",
+                        Content = "当前生命值已设置为: " .. newHealth,
+                        Time = 2
+                    })
+                end
+            end
+        else
+            OrionLib:MakeNotification({
+                Name = "错误",
+                Content = "请输入1-200之间的数字",
+                Time = 2
+            })
+        end
+    end
+})
+
+-- 生命值上限输入框
+tabs["主功能"]:AddTextbox({
+    Name = "设置生命值上限 (1-200)",
+    Default = "100",
+    TextDisappear = false,
+    Callback = function(Value)
+        local newMaxHealth = tonumber(Value)
+        if newMaxHealth and newMaxHealth >= 1 and newMaxHealth <= 200 then
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.MaxHealth = newMaxHealth
+                    OrionLib:MakeNotification({
+                        Name = "生命值上限设置",
+                        Content = "生命值上限已设置为: " .. newMaxHealth,
+                        Time = 2
+                    })
+                end
+            end
+        else
+            OrionLib:MakeNotification({
+                Name = "错误",
+                Content = "请输入1-200之间的数字",
+                Time = 2
+            })
+        end
+    end
+})
+
+-- 显示当前生命值状态
+local healthLabel = tabs["主功能"]:AddLabel("正在获取生命值信息...")
+
+-- 实时更新显示
+spawn(function()
+    while wait(1) do
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                healthLabel:Set("当前: " .. math.floor(humanoid.Health) .. " / 上限: " .. math.floor(humanoid.MaxHealth))
+            end
+        end
+    end
+end)
+
+-- 初始化全局变量
+_G.CollisionSpeed = 150
+_G.LaunchPower = 250
+_G.ChargeDistance = 5
+_G.CurrentSpinSpeed = 20
+_G.JumpHeight = 50
+
+-- 无限跳跃功能
+local InfiniteJumpEnabled = false
+local JumpConnection
+
+tabs["主功能"]:AddToggle({
+    Name = "无限跳跃",
+    Default = false,
+    Callback = function(v)
+        if v then
+            InfiniteJumpEnabled = true
+            JumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+                if InfiniteJumpEnabled then
+                    local character = game.Players.LocalPlayer.Character
+                    if character and character:FindFirstChildOfClass("Humanoid") then
+                        character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
+        else
+            InfiniteJumpEnabled = false
+            if JumpConnection then
+                JumpConnection:Disconnect()
+            end
+        end
+    end
+})
+
+-- 移动速度设置
+tabs["主功能"]:AddTextbox({
+    Name = "设置移动速度",
+    Default = "",
+    PlaceholderText = "输入速度值（16-200）",
+    Callback = function(speedText)
+        if speedText ~= "" then
+            local speed = tonumber(speedText)
+            if speed and speed >= 16 and speed <= 200 then
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char.Humanoid.WalkSpeed = speed
+                end
+            end
+        end
+    end
+})
+
+-- 跳跃高度设置
+tabs["主功能"]:AddTextbox({
+    Name = "设置跳跃高度",
+    Default = "",
+    PlaceholderText = "输入跳跃高度（1-200）",
+    Callback = function(jumpText)
+        if jumpText ~= "" then
+            local jumpHeight = tonumber(jumpText)
+            if jumpHeight and jumpHeight >= 1 and jumpHeight <= 200 then
+                _G.JumpHeight = jumpHeight
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char.Humanoid.JumpPower = jumpHeight
+                end
+                OrionLib:MakeNotification({
+                    Name = "跳跃高度",
+                    Content = "跳跃高度已设置为: " .. jumpHeight,
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+-- 跳跃按钮
+tabs["主功能"]:AddButton({
+    Name = "🦘 超级跳跃",
+    Callback = function()
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChildOfClass("Humanoid") then
+            local humanoid = character.Humanoid
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            
+            if rootPart then
+                -- 保存原始跳跃高度
+                local originalJumpPower = humanoid.JumpPower
+                
+                -- 设置自定义跳跃高度
+                humanoid.JumpPower = _G.JumpHeight or 50
+                
+                -- 执行跳跃
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                
+                -- 添加向上的力来增加跳跃高度
+                local bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.Velocity = Vector3.new(0, (_G.JumpHeight or 50) * 2, 0)
+                bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+                bodyVelocity.Parent = rootPart
+                
+                -- 2秒后移除推力
+                wait(2)
+                if bodyVelocity and bodyVelocity.Parent then
+                    bodyVelocity:Destroy()
+                end
+                
+                -- 恢复原始跳跃高度
+                humanoid.JumpPower = originalJumpPower
+                
+                OrionLib:MakeNotification({
+                    Name = "超级跳跃",
+                    Content = "跳跃高度: " .. (_G.JumpHeight or 50),
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+-- 夜视功能
+tabs["主功能"]:AddToggle({
+    Name = "夜视模式",
+    Default = false,
+    Callback = function(v)
+        if v then
+            game.Lighting.Brightness = 2
+            game.Lighting.Ambient = Color3.new(1, 1, 1)
+            game.Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+        else
+            game.Lighting.Brightness = 1
+            game.Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+            game.Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+        end
+    end
+})
+
+-- 穿墙功能
+local NoclipEnabled = false
+local NoclipConnection
+
+tabs["主功能"]:AddToggle({
+    Name = "穿墙模式",
+    Default = false,
+    Callback = function(v)
+        if v then
+            NoclipEnabled = true
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+            
+            NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
+                if NoclipEnabled and game.Players.LocalPlayer.Character then
+                    for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                else
+                    if NoclipConnection then
+                        NoclipConnection:Disconnect()
+                    end
+                end
+            end)
+        else
+            NoclipEnabled = false
+            if NoclipConnection then
+                NoclipConnection:Disconnect()
+            end
+        end
+    end
+})
+
+-- 强大的防甩飞功能
+local AntiLaunchEnabled = false
+local AntiLaunchHeartbeat
+
+local function EnableAdvancedAntiLaunch()
+    if AntiLaunchEnabled then
+        AntiLaunchHeartbeat = game:GetService("RunService").Heartbeat:Connect(function()
+            local character = game.Players.LocalPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local rootPart = character.HumanoidRootPart
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                
+                for _, obj in pairs(rootPart:GetChildren()) do
+                    if obj:IsA("BodyVelocity") or obj:IsA("BodyForce") or obj:IsA("BodyThrust") or 
+                       obj:IsA("BodyAngularVelocity") or obj:IsA("BodyPosition") then
+                        if obj.Name ~= "ChargeVelocity" and obj.Name ~= "SpinEffect" and obj.Name ~= "AntiLaunchAnchor" then
+                            pcall(function() obj:Destroy() end)
+                        end
+                    end
+                end
+                
+                if rootPart.AssemblyLinearVelocity.Magnitude > 50 then
+                    pcall(function()
+                        rootPart.Velocity = Vector3.new(0, 0, 0)
+                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    end)
+                end
+                
+                if rootPart.AssemblyAngularVelocity.Magnitude > 20 then
+                    pcall(function()
+                        rootPart.RotVelocity = Vector3.new(0, 0, 0)
+                        rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                    end)
+                end
+                
+                if not rootPart:FindFirstChild("AntiLaunchAnchor") then
+                    local anchor = Instance.new("BodyPosition")
+                    anchor.Name = "AntiLaunchAnchor"
+                    anchor.P = 10000
+                    anchor.D = 1000
+                    anchor.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    anchor.Position = rootPart.Position
+                    anchor.Parent = rootPart
+                else
+                    local anchor = rootPart:FindFirstChild("AntiLaunchAnchor")
+                    if anchor then
+                        anchor.Position = rootPart.Position
+                    end
+                end
+                
+                if rootPart.Position.Y > 500 then
+                    pcall(function()
+                        local safeCFrame = CFrame.new(rootPart.Position.X, 50, rootPart.Position.Z)
+                        rootPart.CFrame = safeCFrame
+                    end)
+                end
+                
+                if humanoid then
+                    humanoid.PlatformStand = false
+                    if humanoid:GetState() == Enum.HumanoidStateType.FallingDown or 
+                       humanoid:GetState() == Enum.HumanoidStateType.Ragdoll then
+                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
+                end
+            end
+        end)
+        
+        local function monitorNetworkOwnership()
+            while AntiLaunchEnabled and wait(1) do
+                pcall(function()
+                    local character = game.Players.LocalPlayer.Character
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        local rootPart = character.HumanoidRootPart
+                        rootPart:SetNetworkOwner(game.Players.LocalPlayer)
+                    end
+                end)
+            end
+        end
+        
+        coroutine.wrap(monitorNetworkOwnership)()
+    end
+end
+
+tabs["主功能"]:AddToggle({
+    Name = "🛡️ 超级防甩飞保护",
+    Default = false,
+    Callback = function(v)
+        AntiLaunchEnabled = v
+        if v then
+            OrionLib:MakeNotification({
+                Name = "超级防护",
+                Content = "超级防甩飞保护已开启！现在无人能甩飞你！",
+                Time = 4
+            })
+            EnableAdvancedAntiLaunch()
+        else
+            if AntiLaunchHeartbeat then
+                AntiLaunchHeartbeat:Disconnect()
+                AntiLaunchHeartbeat = nil
+            end
+            
+            pcall(function()
+                local character = game.Players.LocalPlayer.Character
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    local rootPart = character.HumanoidRootPart
+                    local anchor = rootPart:FindFirstChild("AntiLaunchAnchor")
+                    if anchor then
+                        anchor:Destroy()
+                    end
+                end
+            end)
+            
+            OrionLib:MakeNotification({
+                Name = "超级防护",
+                Content = "防甩飞保护已关闭",
+                Time = 3
+            })
+        end
+    end
+})
+
+tabs["主功能"]:AddButton({
+    Name = "指令台",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载指令台，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+        end)()
+    end
+})
+
+tabs["主功能"]:AddButton({
+    Name = "撸管r6",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载撸管r6，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))()
+        end)()
+    end
+})
+
+tabs["主功能"]:AddButton({
+    Name = "撸管r15",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载撸管r15，耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
+        end)()
+    end
+})
+
+tabs["主功能"]:AddButton({
+    Name = "无敌少侠飞行r15",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载无敌少侠r15，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Invinicible-Flight-R15-45414"))()
+        end)()
+    end
+})
+
+tabs["主功能"]:AddButton({
+    Name = "r6无敌少侠飞行",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载r6无敌少侠飞行，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ke9460394-dot/ugik/refs/heads/main/%E6%97%A0%E6%95%8C%E5%B0%91%E4%BE%A0%E9%A3%9E%E8%A1%8Cr6.txt"))()
+        end)()
+    end
+})
+
+-- ==================== 【优化版甩飞功能】 ====================
+tabs["帅飞"]:AddLabel("=== 优化版甩飞流程 ===")
+
+-- 获取所有玩家列表
+local function GetPlayerList()
+    local players = {}
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            table.insert(players, player)
+        end
+    end
+    return players
+end
+
+-- 随机选择玩家
+local function GetRandomPlayer()
+    local players = GetPlayerList()
+    if #players > 0 then
+        return players[math.random(1, #players)]
+    else
+        return nil
+    end
+end
+
+-- 强力甩飞功能（优化版）
+local function SuperLaunchPlayer(targetPlayer, launchPower)
+    if not targetPlayer or not targetPlayer.Character then
+        return false
+    end
+    
+    local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetRoot then
+        return false
+    end
+    
+    for _, obj in pairs(targetRoot:GetChildren()) do
+        if obj:IsA("BodyVelocity") or obj:IsA("BodyForce") or obj:IsA("BodyThrust") then
+            obj:Destroy()
+        end
+    end
+    
+    for _, part in pairs(targetPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+    
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(0, launchPower, 0)
+    bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+    bodyVelocity.P = 10000
+    bodyVelocity.Parent = targetRoot
+    
+    local bodyForce = Instance.new("BodyForce")
+    bodyForce.Force = Vector3.new(0, launchPower * 200, 0)
+    bodyForce.Parent = targetRoot
+    
+    local bodyThrust = Instance.new("BodyThrust")
+    bodyThrust.Force = Vector3.new(0, launchPower * 100, 0)
+    bodyThrust.Location = Vector3.new(0, 0, 0)
+    bodyThrust.Parent = targetRoot
+    
+    local spinVelocity = Instance.new("BodyAngularVelocity")
+    spinVelocity.AngularVelocity = Vector3.new(math.random(-10, 10), math.random(-10, 10), math.random(-10, 10))
+    spinVelocity.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    spinVelocity.Parent = targetRoot
+    
+    wait(5)
+    for _, part in pairs(targetPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
+    end
+    if bodyVelocity and bodyVelocity.Parent then bodyVelocity:Destroy() end
+    if bodyForce and bodyForce.Parent then bodyForce:Destroy() end
+    if bodyThrust and bodyThrust.Parent then bodyThrust:Destroy() end
+    if spinVelocity and spinVelocity.Parent then spinVelocity:Destroy() end
+    
+    return true
+end
+
+-- 优化版甩飞流程的核心功能
+local function OptimizedLaunchProcess(targetPlayer, collisionSpeed, launchPower)
+    if not targetPlayer or not targetPlayer.Character then
+        return false
+    end
+    
+    local myCharacter = game.Players.LocalPlayer.Character
+    if not myCharacter then
+        return false
+    end
+    
+    local myRoot = myCharacter:FindFirstChild("HumanoidRootPart")
+    local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    if not myRoot or not targetRoot then
+        return false
+    end
+    
+    local originalPosition = myRoot.Position
+    local originalCFrame = myRoot.CFrame
+    local originalSpeed = myCharacter.Humanoid.WalkSpeed
+    
+    OrionLib:MakeNotification({
+        Name = "开始流程",
+        Content = "瞬移到 " .. targetPlayer.Name .. " 面前，开始高速冲撞",
+        Time = 3
+    })
+    
+    local targetPosition = targetRoot.Position
+    local targetLookVector = targetRoot.CFrame.LookVector
+    local spawnPosition = targetPosition - (targetLookVector * 5)
+    
+    myRoot.CFrame = CFrame.new(spawnPosition, targetPosition)
+    
+    local isCharging = true
+    local hasCollided = false
+    local chargeConnection
+    
+    myCharacter.Humanoid.WalkSpeed = collisionSpeed
+    
+    local chargeDirection = (targetRoot.Position - myRoot.Position).Unit
+    local chargeStartTime = tick()
+    
+    chargeConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not isCharging or not targetPlayer.Character or not myCharacter then
+            if chargeConnection then
+                chargeConnection:Disconnect()
+            end
+            return
+        end
+        
+        local currentTargetPos = targetRoot.Position
+        local myPos = myRoot.Position
+        local distanceToTarget = (myPos - currentTargetPos).Magnitude
+        
+        chargeDirection = (currentTargetPos - myPos).Unit
+        
+        local bodyVelocity = myRoot:FindFirstChild("ChargeVelocity")
+        if not bodyVelocity then
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.Name = "ChargeVelocity"
+            bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+            bodyVelocity.P = 10000
+            bodyVelocity.Parent = myRoot
+        end
+        
+        bodyVelocity.Velocity = chargeDirection * collisionSpeed
+        
+        if distanceToTarget < 5 and not hasCollided then
+            hasCollided = true
+            isCharging = false
+            
+            if bodyVelocity then bodyVelocity:Destroy() end
+            
+            OrionLib:MakeNotification({
+                Name = "碰撞成功！",
+                Content = "撞到 " .. targetPlayer.Name .. "，开始强力甩飞！",
+                Time = 2
+            })
+            
+            myCharacter.Humanoid.WalkSpeed = originalSpeed
+            
+            SuperLaunchPlayer(targetPlayer, launchPower)
+            
+            wait(2)
+            OrionLib:MakeNotification({
+                Name = "返回原位",
+                Content = "甩飞完成，正在返回原位置",
+                Time = 2
+            })
+            
+            myRoot.CFrame = originalCFrame
+            
+            OrionLib:MakeNotification({
+                Name = "流程完成",
+                Content = "优化版甩飞流程执行完毕！",
+                Time = 3
+            })
+        end
+        
+        if tick() - chargeStartTime > 8 then
+            isCharging = false
+            if chargeConnection then
+                chargeConnection:Disconnect()
+            end
+            local bv = myRoot:FindFirstChild("ChargeVelocity")
+            if bv then bv:Destroy() end
+            myCharacter.Humanoid.WalkSpeed = originalSpeed
+            myRoot.CFrame = originalCFrame
+            
+            OrionLib:MakeNotification({
+                Name = "超时停止",
+                Content = "冲撞超时，已返回原位置",
+                Time = 3
+            })
+        end
+    end)
+    
+    return true
+end
+
+-- 功能1: 优化版甩飞流程
+tabs["帅飞"]:AddButton({
+    Name = "🎯 随机优化版甩飞",
+    Callback = function()
+        local randomPlayer = GetRandomPlayer()
+        if randomPlayer then
+            local success = OptimizedLaunchProcess(
+                randomPlayer, 
+                _G.CollisionSpeed or 150, 
+                _G.LaunchPower or 250
+            )
+            if success then
+                OrionLib:MakeNotification({
+                    Name = "流程开始",
+                    Content = "开始对 " .. randomPlayer.Name .. " 执行优化版甩飞流程",
+                    Time = 3
+                })
+            end
+        else
+            OrionLib:MakeNotification({
+                Name = "没有玩家",
+                Content = "没有找到其他玩家",
+                Time = 3
+            })
+        end
+    end
+})
+
+-- 功能2: 单独测试甩飞
+tabs["帅飞"]:AddButton({
+    Name = "💥 单独测试强力甩飞",
+    Callback = function()
+        local randomPlayer = GetRandomPlayer()
+        if randomPlayer then
+            local success = SuperLaunchPlayer(randomPlayer, _G.LaunchPower or 250)
+            if success then
+                OrionLib:MakeNotification({
+                    Name = "甩飞测试",
+                    Content = "正在强力甩飞 " .. randomPlayer.Name,
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+-- 功能3: 设置参数
+tabs["帅飞"]:AddTextbox({
+    Name = "冲撞速度",
+    Default = "150",
+    PlaceholderText = "输入冲撞速度（50-300）",
+    Callback = function(speedText)
+        if speedText ~= "" then
+            local speed = tonumber(speedText)
+            if speed and speed >= 50 and speed <= 300 then
+                _G.CollisionSpeed = speed
+                OrionLib:MakeNotification({
+                    Name = "冲撞速度",
+                    Content = "冲撞速度已设置为: " .. speed,
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+tabs["帅飞"]:AddTextbox({
+    Name = "甩飞力度",
+    Default = "250",
+    PlaceholderText = "输入甩飞力度（100-1000）",
+    Callback = function(powerText)
+        if powerText ~= "" then
+            local power = tonumber(powerText)
+            if power and power >= 100 and power <= 1000 then
+                _G.LaunchPower = power
+                OrionLib:MakeNotification({
+                    Name = "甩飞力度",
+                    Content = "甩飞力度已设置为: " .. power,
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+tabs["帅飞"]:AddTextbox({
+    Name = "冲撞距离",
+    Default = "5",
+    PlaceholderText = "输入冲撞距离（3-20）",
+    Callback = function(distanceText)
+        if distanceText ~= "" then
+            local distance = tonumber(distanceText)
+            if distance and distance >= 3 and distance <= 20 then
+                _G.ChargeDistance = distance
+                OrionLib:MakeNotification({
+                    Name = "冲撞距离",
+                    Content = "冲撞距离已设置为: " .. distance,
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+-- 旋转功能页面
+tabs["旋转"]:AddLabel("=== 旋转功能 ===")
+
+-- 旋转速度输入框
+tabs["旋转"]:AddTextbox({
+    Name = "设置旋转速度",
+    Default = "",
+    PlaceholderText = "输入旋转速度（1-300）",
+    Callback = function(speedText)
+        if speedText ~= "" then
+            local speed = tonumber(speedText)
+            if speed then
+                if speed >= 1 and speed <= 300 then
+                    if _G.SpinEffect and _G.SpinEffect.Parent then
+                        _G.SpinEffect.AngularVelocity = Vector3.new(0, speed, 0)
+                        OrionLib:MakeNotification({
+                            Name = "旋转速度",
+                            Content = "旋转速度已更新为: " .. speed,
+                            Time = 3
+                        })
+                    else
+                        OrionLib:MakeNotification({
+                            Name = "提示",
+                            Content = "请先开启旋转功能",
+                            Time = 3
+                        })
+                    end
+                else
+                    OrionLib:MakeNotification({
+                        Name = "输入错误",
+                        Content = "旋转速度应在1-300之间",
+                        Time = 3
+                    })
+                end
+            else
+                OrionLib:MakeNotification({
+                    Name = "输入错误",
+                    Content = "请输入有效的数字",
+                    Time = 3
+                })
+            end
+        end
+    end
+})
+
+-- 旋转开关
+tabs["旋转"]:AddToggle({
+    Name = "💫 开启/关闭旋转",
+    Default = false,
+    Callback = function(v)
+        if v then
+            local character = game.Players.LocalPlayer.Character
+            if character then
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    if _G.SpinEffect then
+                        _G.SpinEffect:Destroy()
+                    end
+                    
+                    local spin = Instance.new("BodyAngularVelocity")
+                    spin.AngularVelocity = Vector3.new(0, _G.CurrentSpinSpeed or 20, 0)
+                    spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                    spin.Parent = rootPart
+                    _G.SpinEffect = spin
+                    
+                    OrionLib:MakeNotification({
+                        Name = "旋转开启",
+                        Content = "旋转已开启，速度: " .. (_G.CurrentSpinSpeed or 20),
+                        Time = 3
+                    })
+                end
+            end
+        else
+            if _G.SpinEffect then
+                _G.SpinEffect:Destroy()
+                _G.SpinEffect = nil
+                OrionLib:MakeNotification({
+                    Name = "旋转关闭",
+                    Content = "旋转已关闭",
+                    Time = 2
+                })
+            end
+        end
+    end
+})
+
+-- 快速预设按钮
+tabs["旋转"]:AddLabel("=== 快速预设 ===")
+
+local spinPresets = {
+    {"慢速旋转 (10)", 10},
+    {"中速旋转 (50)", 50},
+    {"快速旋转 (100)", 100},
+    {"极速旋转 (200)", 200},
+    {"超速旋转 (300)", 300}
+}
+
+for i, preset in ipairs(spinPresets) do
+    tabs["旋转"]:AddButton({
+        Name = preset[1],
+        Callback = function()
+            _G.CurrentSpinSpeed = preset[2]
+            if _G.SpinEffect and _G.SpinEffect.Parent then
+                _G.SpinEffect.AngularVelocity = Vector3.new(0, preset[2], 0)
+                OrionLib:MakeNotification({
+                    Name = "旋转速度",
+                    Content = "旋转速度已设置为: " .. preset[2],
+                    Time = 2
+                })
+            else
+                OrionLib:MakeNotification({
+                    Name = "提示",
+                    Content = "预设已保存，请先开启旋转功能",
+                    Time = 3
+                })
+            end
+        end
+    })
+end
+
+-- 其他脚本页面
+tabs["其他脚本"]:AddLabel("--------以下是其他脚本------")
+
+tabs["其他脚本"]:AddButton({
+    Name = "皮脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载皮脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            getgenv().XiaoPi = "皮脚本QQ群1002100032"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaopi77/xiaopi77/main/QQ1002100032-Roblox-Pi-script.lua"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "皮空脚本卡密：皮空脚本垃圾",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载皮空脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            getgenv().Pikon_script = "司空，皮炎制作"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/smalldesikon/eyidfki/840d4b80d4f312c70b7b1067e056a2c4f828ef32/%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC(%E6%B7%B7%E6%B7%86%E5%90%8E).txt"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "林脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载林脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            getgenv().lin = "作者林"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/linnblin/lin/main/lin"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "逆光脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载逆光脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            getgenv().NiGuang = "逆光Q群980694674"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/lool8/-/refs/heads/main/%E9%80%86%E5%85%89.lua"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "秋容脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载秋容脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\81\82\56\54\56\54\47\56\56\54\47\114\101\102\115\47\104\101\97\100\115\47\109\97\105\110\47\66\71\72"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "猿类中心",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载猿类中心，请耐心等待",
+            Time = 3
+        })
+        
+        -- 在新线程中加载猿类中心，不影响当前UI
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/b2004278b4735e1ca615931116373d48.lua"))()
+        end)()
+    end
+})
+tabs["其他脚本"]:AddButton({
+    Name = "禁漫中心",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载禁漫中心，请耐心等待",
+            Time = 3
+        })
+        
+        -- 在新线程中加载禁漫中心，不影响当前UI
+        coroutine.wrap(function()
+            getgenv().LS="禁漫中心" loadstring(game:HttpGet("https://raw.githubusercontent.com/dingding123hhh/ng/main/jmlllllllIIIIlllllII.lua"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "落叶中心",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载落叶中心，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            getgenv().LS="落叶中心" loadstring(game:HttpGet("https://raw.githubusercontent.com/krlpl/Deciduous-center-LS/main/%E8%90%BD%E5%8F%B6%E4%B8%AD%E5%BF%83%E6%B7%B7%E6%B7%86.txt"))()
+        end)()
+    end
+})
+tabs["其他脚本"]:AddButton({
+    Name = "叶脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载叶脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/roblox-ye/QQ515966991/refs/heads/main/ROBLOX-CNVIP-XIAOYE.lua"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "LS Hub",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载LS Hub，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            Script_Key = "LS-FreeKey"
+loadstring(game:HttpGet("https://raw.githubusercontent.com/NOODLES65977/LS_Hub/refs/heads/main/LS_Hubbro/BY%3BTY/AXIN/LS.lua"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "导管中心",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载导管中心，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\34\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\117\115\101\114\97\110\101\119\114\102\102\47\114\111\98\108\111\120\45\47\109\97\105\110\47\37\69\54\37\57\68\37\65\49\37\69\54\37\65\67\37\66\69\37\69\53\37\56\68\37\56\70\37\69\56\37\65\69\37\65\69\34\41\41\40\41\10")()
+        end)()
+    end
+})
+tabs["其他脚本"]:AddButton({
+    Name = "帝脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载帝脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+             --云端更新--
+EM_HUB = "帝脚本"
+loadstring(game:HttpGet("https://raw.githubusercontent.com/zilinskaslandon/-/refs/heads/main/lllllllll.lua"))()
+        end)()
+    end
+})
+tabs["其他脚本"]:AddButton({
+    Name = "我不知道",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/dream77239/kanl/refs/heads/main/Kanl%E8%84%9A%E6%9C%AC"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "XC",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载XC，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("\104\116\116\112\115\58\47\47\112\97\115\116\101\98\105\110\46\99\111\109\47\114\97\119\47\103\101\109\120\72\119\65\49"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "小达内部",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载小达内部，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            xiaoda = "作者_小达"Xiaoda = "作者QQ_3491629303"XiaoDa = "QQ群_705257336"loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\34\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\49\51\51\117\102\117\100\104\100\117\47\72\76\68\72\81\86\81\82\80\66\47\109\97\105\110\47\81\85\81\34\41\41\40\41\10")()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "南宁中心",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载南宁中心，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\34\104\116\116\112\115\58\47\47\112\97\115\116\101\98\105\110\46\99\111\109\47\114\97\119\47\54\88\67\87\82\87\110\76\34\41\40\41\40\103\97\109\101\58\72\116\116\112\71\101\116\34\104\116\116\112\115\58\47\47\112\97\115\116\101\98\105\110\46\99\111\109\47\114\97\119\47\78\112\86\65\110\119\110\104\34\41\40\41\10")()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "脚本中心",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载脚本中心，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(utf8.char((function() return table.unpack({108,111,97,100,115,116,114,105,110,103,40,103,97,109,101,58,72,116,116,112,71,101,116,40,34,104,116,116,112,115,58,47,47,114,97,119,46,103,105,116,104,117,98,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,47,67,104,105,110,97,81,89,47,45,47,109,97,105,110,47,37,69,54,37,56,51,37,56,53,37,69,52,37,66,65,37,57,49,34,41,41,40,41})end)()))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "X脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载皮lD脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/maowang1/xx/refs/heads/main/Protected_8858329470146381.txt"))()
+
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "XA Hub",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载XA Hub，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/h8nC0fLb", true))()loadstring(game:HttpGet("https://raw.githubusercontent.com/XingFork/Scripts/refs/heads/main/Ohio"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "kenny1.5",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载kenny1.5，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ke9460394-dot/ugik/refs/heads/main/Kenny1.5.txt"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "北极脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载北极脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/KwARpDxV",true))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "NOL",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载NOL脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Syndromehsh/BETA2/refs/heads/main/NOL"))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "秋脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载秋脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            local SCC_CharPool={
+[1]= tostring(utf8.char((function() return table.unpack({104,116,116,112,115,58,47,47,114,97,119,46,103,105,116,104,117,98,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,47,87,83,56,53,55,57,54,48,47,45,47,109,97,105,110,47,37,69,55,37,65,55,37,56,66,37,67,50,37,66,55,37,69,56,37,56,55,37,65,65,37,69,53,37,56,56,37,66,54,37,69,56,37,56,52,37,57,65,37,69,54,37,57,67,37,65,67,37,69,54,37,57,54,37,66,48,37,69,54,37,66,65,37,57,48,37,69,55,37,65,48,37,56,49,46,116,120,116})end)()))}
+loadstring(game:HttpGet(SCC_CharPool[1]))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "神光脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载神光脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            loadstring(game:HttpGet(utf8.char((function() return table.unpack({104,116,116,112,115,58,47,47,112,97,115,116,101,98,105,110,46,99,111,109,47,114,97,119,47,56,102,50,76,99,113,113,80})end)())))()
+        end)()
+    end
+})
+
+tabs["其他脚本"]:AddButton({
+    Name = "秋脚本",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "即将加载秋脚本，请耐心等待",
+            Time = 3
+        })
+        
+        coroutine.wrap(function()
+            local SCC_CharPool={
+[1]= tostring(utf8.char((function() return table.unpack({104,116,116,112,115,58,47,47,114,97,119,46,103,105,116,104,117,98,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,47,87,83,56,53,55,57,54,48,47,45,47,109,97,105,110,47,37,69,55,37,65,55,37,56,66,37,67,50,37,66,55,37,69,56,37,56,55,37,65,65,37,69,53,37,56,56,37,66,54,37,69,56,37,56,52,37,57,65,37,69,54,37,57,67,37,65,67,37,69,54,37,57,54,37,66,48,37,69,54,37,66,65,37,57,48,37,69,55,37,65,48,37,56,49,46,116,120,116})end)()))}
+loadstring(game:HttpGet(SCC_CharPool[1]))()
+        end)()
+    end
+})
+
+--Doors脚本页面
+tabs["Doors"]:AddButton({
+    Name = "Abysall",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载Abysall脚本...",
+            Time = 3
+        })
+        
+        -- 加载Doors脚本
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/atnew2025/Chinese-scripts/refs/heads/main/Abysallcn-hub"))()
+    end
+})
+
+tabs["Doors"]:AddButton({
+    Name = "mshax",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载mshax脚本...",
+            Time = 3
+        })
+        
+        -- 加载Doors脚本
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/atnew2025/Chinese-scripts/refs/heads/main/mshax(prohax).txt"))()
+    end
+})
+
+tabs["Doors"]:AddButton({
+    Name = "XA Doors",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载Doors脚本...",
+            Time = 3
+        })
+        
+        -- 加载Doors脚本
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Games/Doors.lua"))()
+    end
+})
+
+--加载99夜脚本
+tabs["99夜"]:AddButton({
+    Name = "99XA Hub",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载99脚本...",
+            Time = 3
+        })
+        
+        -- 加载99夜脚本
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Games/森林中的99夜.lua"))()
+    end
+})
+
+tabs["99夜"]:AddButton({
+    Name = "99kenny汉化",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载99脚本...",
+            Time = 3
+        })
+        
+        -- 加载99夜脚本
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ke9460394-dot/ugik/refs/heads/main/99%E5%A4%9C%E8%99%9A%E7%A9%BA.txt"))()
+    end
+})
+
+tabs["自然灾害"]:AddButton({
+    Name = "自然灾害 XA",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载自然灾害脚本...",
+            Time = 3
+        })
+        
+        -- 加载XA脚本
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Games/自然灾害.lua"))()
+    end
+})
+
+tabs["自然灾害"]:AddButton({
+    Name = "黑洞v6",
+    Callback = function()
+        OrionLib:MakeNotification({
+            Name = "提示",
+            Content = "正在加载自然灾害脚本...",
+            Time = 3
+        })
+        
+        -- 加载脚本
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Super-ring-Parts-V6-28581"))()
+    end
+})
+
+-- 添加快捷键
+local toggleConnection
+toggleConnection = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.F9 then
+        MainWindow:ToggleUI()
+    end
+end)
+
+table.insert(_G.UniversalUITool.Connections, toggleConnection)
+
+OrionLib:MakeNotification({
+    Name = "xhknfjnknn脚本加载成功",
+    Content = "欢迎您使用祝你玩的开心🥰",
+    Time = 4
+})
+
+print("=== xhknfjnknn脚本加载成功 ===")
+
