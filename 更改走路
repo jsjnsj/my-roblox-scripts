@@ -1,0 +1,25 @@
+-- 不想玩墨水制作
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+humanoid.WalkSpeed = 16
+
+-- 禁用Roblox默认动画
+local animateScript = character:FindFirstChild("Animate")
+if animateScript then
+    animateScript.Disabled = true
+end
+
+-- 手动加载并加速播放跑步动画
+local runAnimation = Instance.new("Animation")
+runAnimation.AnimationId = "rbxassetid://913376220" -- 默认跑步动画
+
+-- 监听移动
+humanoid.Running:Connect(function(speed)
+    if speed > 0 and not runTrack.IsPlaying then
+        runTrack:Play()
+    elseif speed == 0 and runTrack.IsPlaying then
+        runTrack:Stop()
+    end
+end)
