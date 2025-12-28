@@ -1,4 +1,4 @@
---不想玩墨水
+--不想玩墨水制作
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
@@ -29,7 +29,7 @@ applyNoHead(character)
 player.CharacterAdded:Connect(function(newChar)
     task.wait(0.5)
     applyNoHead(newChar)
-    print("🔄 无头效果已重新应用")
+    print("无头效果已重新应用")
 end)
 
 print(" 无头脚本已激活！（保留头发）")
