@@ -15,6 +15,11 @@ end
 local runAnimation = Instance.new("Animation")
 runAnimation.AnimationId = "rbxassetid://913376220" -- 默认跑步动画
 
+local runTrack = humanoid:LoadAnimation(runAnimation)
+runTrack:Play()
+runTrack.Looped = true
+runTrack:AdjustSpeed(5) -- 5倍速
+
 -- 监听移动
 humanoid.Running:Connect(function(speed)
     if speed > 0 and not runTrack.IsPlaying then
@@ -23,3 +28,4 @@ humanoid.Running:Connect(function(speed)
         runTrack:Stop()
     end
 end)
+
