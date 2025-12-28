@@ -4,7 +4,7 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
-humanoid.WalkSpeed = 2.5
+humanoid.WalkSpeed = 1.9
 
 -- 2. 禁用默认动画脚本（关键！否则Roblox会根据速度自动切换走路/跑步）
 local animateScript = character:FindFirstChild("Animate")
