@@ -1,0 +1,48 @@
+-- 不想玩墨水
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- 等待角色加载
+task.wait(0.5)
+
+-- 暴力搜索并隐藏左腿
+local function applyNoLeg(char)
+    local legFound = false
+    
+    -- 方法1：查找标准命名
+    for _, legName in ipairs({"Left Leg", "LeftLeg", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot"}) do
+        local leg = char:FindFirstChild(legName)
+        if leg then
+            leg.Transparency = 1
+            legFound = true
+            print("✅ 已隐藏: " .. legName)
+        end
+    end
+    
+    -- 方法2：暴力搜索所有含"Left"的部件
+    if not legFound then
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") and part.Name:lower():find("left") and not part.Name:lower():find("arm") then
+                part.Transparency = 1
+                legFound = true
+                print("✅ 已隐藏（暴力搜索）: " .. part.Name)
+            end
+        end
+    end
+    
+    if not legFound then
+        print("⚠️ 未找到左腿，可能游戏使用了特殊命名")
+    end
+end
+
+applyNoLeg(character)
+
+-- 自动重生应用
+player.CharacterAdded:Connect(function(newChar)
+    task.wait(0.5)
+    applyNoLeg(newChar)
+    print("🔄 断腿效果已重新应用")
+end)
+
+print("✅ 断腿脚本已激活！（左腿消失）")
+
