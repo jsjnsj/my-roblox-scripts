@@ -1,0 +1,45 @@
+--此脚本为不想玩墨水制作,如有需要请艾特
+-- 漫步侠（强制跑步姿势版）
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- 1. 设置移动速度为正常的1/3（慢3倍）
+humanoid.WalkSpeed = 5.33
+
+-- 2. 禁用默认动画脚本（关键！否则Roblox会根据速度自动切换走路/跑步）
+local animateScript = character:FindFirstChild("Animate")
+if animateScript then
+    animateScript.Disabled = true
+end
+
+-- 3. 加载跑步动画（使用默认跑步动画ID）
+local runAnimation = Instance.new("Animation")
+runAnimation.AnimationId = "rbxassetid://913376220" -- 默认跑步动画
+local runTrack = humanoid:LoadAnimation(runAnimation)
+runTrack.Looped = true
+
+-- 4. 监听移动并强制播放跑步动画
+humanoid.Running:Connect(function(speed)
+    if speed > 0 then
+        if not runTrack.IsPlaying then
+            runTrack:Play()
+            runTrack:AdjustSpeed(10) -- 10倍速播放
+        end
+    else
+        if runTrack.IsPlaying then
+            runTrack:Stop()
+        end
+    end
+end)
+
+-- 5. 持续强制10倍速（防止Roblox覆盖）
+coroutine.wrap(function()
+    while task.wait(0.1) do
+        if runTrack.IsPlaying then
+            runTrack:AdjustSpeed(10)
+        end
+    end
+end)()
+
+print("漫步侠（强制跑步版）已激活！")
